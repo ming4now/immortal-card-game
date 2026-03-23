@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>凡人修仙传 - 修仙卡牌</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/ai-styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- 顶部信息栏 -->
+        <div id="top-bar">
+            <div id="game-title">凡人修仙传 - 修仙卡牌</div>
+        </div>
+
+        <!-- 对手区域 -->
+        <div id="opponent-area">
+            <div id="opponent-hero" class="hero-card">
+                <div class="hero-avatar">敌</div>
+                <div class="hero-info">
+                    <div class="hero-name">敌方修士</div>
+                    <div class="hero-health">寿元: <span id="opponent-health">30</span></div>
+                    <div class="hero-realm">境界: <span id="opponent-realm">练气1层</span></div>
+                    <div class="hero-sect">宗门: <span id="opponent-sect">魔道</span></div>
+                </div>
+            </div>
+            <div id="opponent-hand" class="hand-area">手牌: <span id="opponent-hand-count">0</span></div>
+            <div id="opponent-field" class="field-area">
+                <div class="field-label">场上修士</div>
+                <div id="opponent-creatures" class="creatures-container"></div>
+            </div>
+        </div>
+
+        <!-- 战场中央 -->
+        <div id="battle-area">
+            <div id="turn-info">
+                <div>第 <span id="turn-number">1</span> 回合</div>
+                <div id="current-player">我方回合</div>
+            </div>
+            <div id="mana-info">
+                <div>灵石: <span id="current-mana">1</span> / <span id="max-mana">1</span></div>
+                <div>境界: <span id="player-realm-level">练气1层</span></div>
+            </div>
+        </div>
+
+        <!-- 玩家区域 -->
+        <div id="player-area">
+            <div id="player-field" class="field-area">
+                <div class="field-label">场上修士</div>
+                <div id="player-creatures" class="creatures-container"></div>
+            </div>
+            
+            <div id="player-hero" class="hero-card" onclick="game.selectHero('player')">
+                <div class="hero-avatar" id="player-avatar">韩</div>
+                <div class="hero-info">
+                    <div class="hero-name" id="player-hero-name">韩立</div>
+                    <div class="hero-health">寿元: <span id="player-health">30</span></div>
+                    <div class="hero-realm">境界: <span id="player-realm-text">练气1层</span></div>
+                    <div class="hero-sect">宗门: <span id="player-sect">黄枫谷</span></div>
+                    <div class="hero-skill" id="hero-skill">长春功: 每回合恢复1点生命</div>
+                </div>
+            </div>
+
+            <div id="player-hand" class="hand-area"></div>
+        </div>
+
+        <!-- 卡组信息 -->
+        <div id="deck-info">
+            <div>牌库: <span id="deck-count">20</span></div>
+            <div>墓地: <span id="graveyard-count">0</span></div>
+        </div>
+
+        <!-- 底部操作栏 -->
+        <div id="bottom-bar">
+            <button id="end-turn-btn" onclick="game.endTurn()">结束回合</button>
+        </div>
+    </div>
+
+    <!-- 游戏日志 -->
+    <div id="game-log">
+        <div class="log-header">
+            <div class="log-title">战斗记录</div>
+            <button id="download-log-btn" onclick="game.downloadLog()">📥 下载日志</button>
+        </div>
+        <div id="log-content"></div>
+    </div>
+
+    <!-- AI配置弹窗 -->
+    <div id="ai-config-modal" class="modal">
+        <div class="modal-content">
+            <h2>游戏模式配置</h2>
+            
+            <div class="config-section">
+                <h3>游戏模式</h3>
+                <div class="mode-select">
+                    <label class="mode-option">
+                        <input type="radio" name="game-mode" value="pvp" checked>
+                        <span>👤 玩家对战</span>
+                    </label>
+                    <label class="mode-option">
+                        <input type="radio" name="game-mode" value="pve">
+                        <span>🤖 玩家 vs AI</span>
+                    </label>
+                    <label class="mode-option">
+                        <input type="radio" name="game-mode" value="eve">
+                        <span>🤖🤖 AI观战模式</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="config-section" id="player-ai-config">
+                <h3>我方AI配置</h3>
+                <div class="ai-toggle">
+                    <label>
+                        <input type="checkbox" id="player-ai-enabled">
+                        <span>启用AI控制我方</span>
+                    </label>
+                </div>
+                <div class="ai-settings" id="player-ai-settings" style="display:none;">
+                    <div class="form-row">
+                        <label>AI模型:</label>
+                        <select id="player-ai-provider">
+                            <option value="minimax" selected>MiniMax</option>
+                            <option value="kimi">Kimi</option>
+                            <option value="gpt">GPT</option>
+                            <option value="claude">Claude</option>
+                            <option value="mock">本地模拟</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label>模型版本:</label>
+                        <select id="player-ai-model">
+                            <option value="MiniMax-M2.7" selected>MiniMax-M2.7</option>
+                            <option value="MiniMax-M2.5">MiniMax-M2.5</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label>API Key:</label>
+                        <input type="password" id="player-ai-key" placeholder="输入API Key">
+                    </div>
+                </div>
+            </div>
+
+            <div class="config-section" id="opponent-ai-config">
+                <h3>敌方AI配置</h3>
+                <div class="ai-toggle">
+                    <label>
+                        <input type="checkbox" id="opponent-ai-enabled" checked>
+                        <span>启用AI控制敌方</span>
+                    </label>
+                </div>
+                <div class="ai-settings" id="opponent-ai-settings">
+                    <div class="form-row">
+                        <label>AI模型:</label>
+                        <select id="opponent-ai-provider">
+                            <option value="minimax" selected>MiniMax</option>
+                            <option value="kimi">Kimi</option>
+                            <option value="gpt">GPT</option>
+                            <option value="claude">Claude</option>
+                            <option value="mock">本地模拟(无需Key)</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label>模型版本:</label>
+                        <select id="opponent-ai-model">
+                            <option value="MiniMax-M2.7" selected>MiniMax-M2.7</option>
+                            <option value="MiniMax-M2.5">MiniMax-M2.5</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label>API Key: <span class="hint">(留空使用本地模拟)</span></label>
+                        <input type="password" id="opponent-ai-key" placeholder="输入API Key">
+                    </div>
+                    <div class="form-row">
+                        <label>决策超时: <span id="timeout-value">5</span>秒</label>
+                        <input type="range" id="ai-timeout" min="3" max="15" value="5">
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="game.saveAIConfig()" class="primary-btn">下一步: 选择修士</button>
+        </div>
+    </div>
+
+    <!-- 英雄选择弹窗 -->
+    <div id="hero-select-modal" class="modal">
+        <div class="modal-content">
+            <h2>选择你的修士</h2>
+            <div id="hero-list"></div>
+            <button onclick="game.startWithHero()">开始游戏</button>
+        </div>
+    </div>
+
+    <script src="js/cards.js"></script>
+    <script src="js/heroes.js"></script>
+    <script src="js/ai-brain.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>

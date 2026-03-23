@@ -1,0 +1,199 @@
+/* 伤害闪烁效果 */
+.damage-flash {
+    animation: damageFlash 0.5s ease-out;
+}
+
+@keyframes damageFlash {
+    0%, 100% { filter: brightness(1); transform: scale(1); }
+    25% { filter: brightness(2) sepia(1) hue-rotate(-50deg) saturate(3); transform: scale(1.05); }
+    50% { filter: brightness(1.5) sepia(1) hue-rotate(-50deg) saturate(2); transform: scale(1.02); }
+}
+
+/* 治疗闪烁效果 */
+.heal-flash {
+    animation: healFlash 0.5s ease-out;
+}
+
+@keyframes healFlash {
+    0%, 100% { filter: brightness(1); box-shadow: none; }
+    50% { filter: brightness(1.5) sepia(1) hue-rotate(90deg) saturate(2); box-shadow: 0 0 30px #27ae60; }
+}
+
+/* 境界提升特效 */
+.realm-up {
+    animation: realmUp 1s ease-out;
+}
+
+@keyframes realmUp {
+    0% { transform: scale(1); box-shadow: 0 0 0 rgba(243, 156, 18, 0); }
+    50% { transform: scale(1.1); box-shadow: 0 0 50px rgba(243, 156, 18, 0.8); }
+    100% { transform: scale(1); box-shadow: 0 0 0 rgba(243, 156, 18, 0); }
+}
+
+/* 灵石变化特效 */
+.mana-gain {
+    animation: manaPulse 0.5s ease-out;
+}
+
+@keyframes manaPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); color: #3498db; text-shadow: 0 0 20px #3498db; }
+}
+
+/* 护盾获得特效 */
+.shield-gain {
+    animation: shieldPulse 0.6s ease-out;
+}
+
+@keyframes shieldPulse {
+    0%, 100% { border-color: #f39c12; box-shadow: none; }
+    50% { border-color: #95a5a6; box-shadow: 0 0 30px #95a5a6, inset 0 0 20px rgba(149, 165, 166, 0.3); }
+}
+
+/* 死亡特效 */
+.death-anim {
+    animation: deathFade 1s ease-out forwards;
+}
+
+@keyframes deathFade {
+    0% { opacity: 1; filter: grayscale(0); transform: scale(1); }
+    50% { filter: grayscale(0.5); transform: scale(0.9); }
+    100% { opacity: 0; filter: grayscale(1); transform: scale(0.5); }
+}
+
+/* ========== AI配置界面样式 ========== */
+
+.config-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 15px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.config-section h3 {
+    margin-bottom: 15px;
+    color: #f39c12;
+    font-size: 16px;
+}
+
+.mode-select {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.mode-option {
+    flex: 1;
+    min-width: 150px;
+    padding: 15px;
+    background: rgba(255,255,255,0.05);
+    border: 2px solid #555;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+}
+
+.mode-option:hover {
+    border-color: #f39c12;
+    background: rgba(243, 156, 18, 0.1);
+}
+
+.mode-option input {
+    display: none;
+}
+
+.mode-option input:checked + span {
+    color: #f39c12;
+    font-weight: bold;
+}
+
+.ai-toggle {
+    margin-bottom: 15px;
+}
+
+.ai-toggle label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.ai-toggle input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #f39c12;
+}
+
+.ai-settings {
+    padding: 15px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 10px;
+}
+
+.form-row {
+    margin-bottom: 12px;
+}
+
+.form-row label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 13px;
+    color: #aaa;
+}
+
+.form-row select,
+.form-row input {
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid #555;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+}
+
+.form-row select:focus,
+.form-row input:focus {
+    outline: none;
+    border-color: #f39c12;
+}
+
+.form-row option {
+    background: #1a1a2e;
+    color: #fff;
+}
+
+.primary-btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: bold;
+    background: linear-gradient(135deg, #f39c12, #e74c3c);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(243, 156, 18, 0.4);
+}
+
+.ai-thinking {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    background: rgba(243, 156, 18, 0.9);
+    color: #000;
+    border-radius: 20px;
+    font-weight: bold;
+    animation: pulse 1.5s infinite;
+    z-index: 1001;
+}
