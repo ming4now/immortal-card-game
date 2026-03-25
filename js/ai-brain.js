@@ -39,7 +39,7 @@ class AIBrain {
         this.model = config.model || AI_MODELS[this.provider].defaultModel;
         this.apiKey = config.apiKey || '';
         this.isEnabled = config.enabled !== false;
-        this.timeout = config.timeout || 5000; // 默认5秒超时
+        this.timeout = config.timeout || 15000; // 默认15秒超时
         this.stats = { calls: 0, errors: 0, totalLatency: 0, timeouts: 0 };
     }
 
@@ -228,35 +228,66 @@ ${opponent.field.length > 0 ? opponent.field.map((c, idx) => `${idx}: ${c.name}(
         
         switch(decisionType) {
             case 'play_card':
-                // 优先打出能负担的卡牌
+                // 智能出牌策略：优先随从 > 法术/法宝 > 其他
                 const affordable = player.hand
                     .map((card, idx) => ({ card, idx }))
-                    .filter(({ card }) => card.cost <= player.mana)
-                    .sort((a, b) => b.card.cost - a.card.cost);
+                    .filter(({ card }) => card.cost <= player.mana);
                 
-                if (affordable.length > 0) {
-                    return { type: 'play_card', cardIndex: affordable[0].idx };
+                if (affordable.length === 0) {
+                    return { type: 'play_card', cardIndex: -1 };
                 }
-                return { type: 'play_card', cardIndex: -1 };
+                
+                // 分类卡牌优先级
+                const creatures = affordable.filter(({ card }) => 
+                    card.type === 'cultivator' || card.type === 'pet' || card.type === 'puppet');
+                const damageSpells = affordable.filter(({ card }) => 
+                    card.type === 'spell' && (card.name.includes('火球') || card.name.includes('雷击') || card.name.includes('剑')));
+                const others = affordable.filter(({ card }) => 
+                    !creatures.includes({card}) && !damageSpells.includes({card}));
+                
+                // 优先级：随从 > 伤害法术 > 其他（按费用排序）
+                let bestCard;
+                if (creatures.length > 0) {
+                    bestCard = creatures.sort((a, b) => b.card.cost - a.card.cost)[0];
+                } else if (damageSpells.length > 0 && gameState.opponent.field.length > 0) {
+                    bestCard = damageSpells.sort((a, b) => b.card.cost - a.card.cost)[0];
+                } else {
+                    bestCard = affordable.sort((a, b) => b.card.cost - a.card.cost)[0];
+                }
+                
+                return { type: 'play_card', cardIndex: bestCard.idx };
                 
             case 'attack':
-                const attackers = player.field.filter(c => !c.hasAttacked && !c.frozen);
+                const attackers = player.field.filter(c => !c.hasAttacked && !c.frozen && !c.wasFrozen);
                 if (attackers.length === 0) return { type: 'skip' };
                 
-                // 优先攻击敌方场上威胁最大的
+                // 获取可攻击的随从索引
+                const attackerIndices = player.field
+                    .map((c, idx) => ({ c, idx }))
+                    .filter(({ c }) => !c.hasAttacked && !c.frozen && !c.wasFrozen);
+                
+                if (attackerIndices.length === 0) return { type: 'skip' };
+                
+                // 优先攻击敌方场上威胁最大的（攻击力高或生命值低）
                 if (gameState.opponent.field.length > 0) {
-                    // 找攻击力最高的敌方修士
+                    // 找攻击力最高的敌方修士，优先消灭高威胁
                     const strongestEnemy = gameState.opponent.field
                         .map((c, idx) => ({ c, idx }))
                         .sort((a, b) => b.c.attack - a.c.attack)[0];
+                    
+                    // 使用第一个可用的攻击者
                     return {
                         type: 'attack',
-                        attackerIndex: 0,
+                        attackerIndex: attackerIndices[0].idx,
                         target: strongestEnemy.idx
                     };
                 }
                 // 直接攻击英雄
-                return { type: 'attack', attackerIndex: 0, target: 'hero' };
+                return { 
+                    type: 'attack', 
+                    attackerIndex: attackerIndices[0].idx, 
+                    target: 'hero' 
+                };
                 
             case 'end_turn':
                 // 没有可出的牌就结束

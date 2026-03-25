@@ -10,10 +10,10 @@ const HEROES = {
         health: 30,
         skill: {
             name: '长春功',
-            description: '每回合开始时恢复2点生命',
+            description: '每回合开始时恢复1点生命',
             effect: (hero) => {
-                hero.heal(2);
-                return '韩立运转长春功，恢复2点生命';
+                hero.heal(1);
+                return '韩立运转长春功，恢复1点生命';
             }
         },
         specialCards: ['qingyuan_sword', 'golden_cup', 'blood_sword']
@@ -76,10 +76,10 @@ const HEROES = {
         health: 26,
         skill: {
             name: '妖狐化身',
-            description: '每回合可以抽一张额外卡牌（消耗2灵石）',
+            description: '每回合自动消耗2灵石额外抽一张牌（灵石不足或手牌满时跳过）',
             effect: (hero) => {
-                // 在手牌区添加一个特殊按钮
-                return '银月可消耗2灵石额外抽牌';
+                // 实际逻辑在Player.startTurn中处理
+                return null;
             }
         },
         specialCards: ['fox_fire', 'illusion_moon', 'soul_devour']
@@ -95,13 +95,27 @@ const HEROES = {
         health: 27,
         skill: {
             name: '妙音幻术',
-            description: '敌方场上修士攻击力-1',
+            description: '每回合开始时，敌方场上修士攻击力-1（已减过的不再重复）',
             effect: (hero, game) => {
+                if (!game) return null;
                 const opponent = game.getOpponent(hero);
+                // 记录本回合已经施加过 debuff 的随从
+                if (!hero._zilingDebuffTargets) hero._zilingDebuffTargets = new Set();
+                
+                let debuffedCount = 0;
                 opponent.field.forEach(creature => {
-                    creature.attack = Math.max(0, creature.attack - 1);
+                    // 如果本回合还没给这个随从减过攻击力
+                    if (!hero._zilingDebuffTargets.has(creature.id)) {
+                        creature.attack = Math.max(0, creature.attack - 1);
+                        hero._zilingDebuffTargets.add(creature.id);
+                        debuffedCount++;
+                    }
                 });
-                return '紫灵施展幻术，敌方修士攻击力下降';
+                
+                if (debuffedCount > 0) {
+                    return `紫灵施展幻术，${debuffedCount}个敌方修士攻击力下降`;
+                }
+                return null;
             }
         },
         specialCards: ['sound_blade', 'charm_dance']

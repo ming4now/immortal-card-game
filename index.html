@@ -12,68 +12,148 @@
         <!-- 顶部信息栏 -->
         <div id="top-bar">
             <div id="game-title">凡人修仙传 - 修仙卡牌</div>
+            <div id="turn-info-top">
+                <span>第 <span id="turn-number">1</span> 回合</span>
+                <span id="current-player">我方回合</span>
+            </div>
         </div>
 
-        <!-- 对手区域 -->
-        <div id="opponent-area">
-            <div id="opponent-hero" class="hero-card">
-                <div class="hero-avatar">敌</div>
-                <div class="hero-info">
-                    <div class="hero-name">敌方修士</div>
-                    <div class="hero-health">寿元: <span id="opponent-health">30</span></div>
-                    <div class="hero-realm">境界: <span id="opponent-realm">练气1层</span></div>
-                    <div class="hero-sect">宗门: <span id="opponent-sect">魔道</span></div>
+        <!-- 主游戏区 - 三栏布局 -->
+        <div id="main-game-area">
+            <!-- 左侧：敌方信息 -->
+            <div id="left-panel">
+                <!-- 敌方英雄信息 -->
+                <div id="opponent-hero" class="hero-card-side">
+                    <div class="hero-avatar" id="opponent-avatar">敌</div>
+                    <div class="hero-info-compact">
+                        <div class="hero-name" id="opponent-hero-name">敌方修士</div>
+                        <div class="hero-stats-row">
+                            <span>❤️<span id="opponent-health">30</span></span>
+                            <span>🛡️<span id="opponent-armor">0</span></span>
+                            <span>🃏<span id="opponent-hand-count">0</span></span>
+                        </div>
+                        <div class="hero-realm"><span id="opponent-realm">练气1层</span> | <span id="opponent-sect">魔道</span></div>
+                    </div>
                 </div>
-            </div>
-            <div id="opponent-hand" class="hand-area">手牌: <span id="opponent-hand-count">0</span></div>
-            <div id="opponent-field" class="field-area">
-                <div class="field-label">场上修士</div>
-                <div id="opponent-creatures" class="creatures-container"></div>
-            </div>
-        </div>
-
-        <!-- 战场中央 -->
-        <div id="battle-area">
-            <div id="turn-info">
-                <div>第 <span id="turn-number">1</span> 回合</div>
-                <div id="current-player">我方回合</div>
-            </div>
-            <div id="mana-info">
-                <div>灵石: <span id="current-mana">1</span> / <span id="max-mana">1</span></div>
-                <div>境界: <span id="player-realm-level">练气1层</span></div>
-            </div>
-        </div>
-
-        <!-- 玩家区域 -->
-        <div id="player-area">
-            <div id="player-field" class="field-area">
-                <div class="field-label">场上修士</div>
-                <div id="player-creatures" class="creatures-container"></div>
-            </div>
-            
-            <div id="player-hero" class="hero-card" onclick="game.selectHero('player')">
-                <div class="hero-avatar" id="player-avatar">韩</div>
-                <div class="hero-info">
-                    <div class="hero-name" id="player-hero-name">韩立</div>
-                    <div class="hero-health">寿元: <span id="player-health">30</span></div>
-                    <div class="hero-realm">境界: <span id="player-realm-text">练气1层</span></div>
-                    <div class="hero-sect">宗门: <span id="player-sect">黄枫谷</span></div>
-                    <div class="hero-skill" id="hero-skill">长春功: 每回合恢复1点生命</div>
+                
+                <!-- 敌方牌组信息 -->
+                <div class="deck-info-side">
+                    <div>牌库: <span id="opponent-deck-count">40</span></div>
+                    <div>墓地: <span id="opponent-graveyard-count">0</span></div>
                 </div>
             </div>
 
-            <div id="player-hand" class="hand-area"></div>
-        </div>
+            <!-- 中间：战场区域 -->
+            <div id="center-panel">
+                <!-- 敌方手牌（上帝视角）- 放在最上方 -->
+                <div id="opponent-hand-god-view" class="hand-area god-view-area" style="display:none;">
+                    <div class="field-label god-view-label">👁️ 敌方手牌（上帝视角）</div>
+                    <div id="opponent-hand-cards-god" class="hand-cards-container"></div>
+                </div>
 
-        <!-- 卡组信息 -->
-        <div id="deck-info">
-            <div>牌库: <span id="deck-count">20</span></div>
-            <div>墓地: <span id="graveyard-count">0</span></div>
-        </div>
+                <!-- 敌方区域 -->
+                <div id="opponent-field-area">
+                    <div class="spell-trap-row">
+                        <div id="opponent-formation-area" class="formation-area-compact">
+                            <div class="area-label formation-label">阵法</div>
+                            <div class="slots-row">
+                                <div id="opponent-formation-1" class="slot-mini formation-slot" data-slot="1"></div>
+                                <div id="opponent-formation-2" class="slot-mini formation-slot" data-slot="2"></div>
+                                <div id="opponent-formation-3" class="slot-mini formation-slot" data-slot="3"></div>
+                            </div>
+                        </div>
+                        <div id="opponent-treasure-area" class="treasure-area-compact">
+                            <div class="area-label treasure-label">法宝</div>
+                            <div class="slots-row">
+                                <div id="opponent-treasure-1" class="slot-mini treasure-slot" data-slot="1"></div>
+                                <div id="opponent-treasure-2" class="slot-mini treasure-slot" data-slot="2"></div>
+                                <div id="opponent-treasure-3" class="slot-mini treasure-slot" data-slot="3"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="opponent-monster-area" class="monster-area-compact">
+                        <div class="slots-row six-slots">
+                            <div id="opponent-monster-1" class="slot monster-slot" data-slot="1"></div>
+                            <div id="opponent-monster-2" class="slot monster-slot" data-slot="2"></div>
+                            <div id="opponent-monster-3" class="slot monster-slot" data-slot="3"></div>
+                            <div id="opponent-monster-4" class="slot monster-slot" data-slot="4"></div>
+                            <div id="opponent-monster-5" class="slot monster-slot" data-slot="5"></div>
+                            <div id="opponent-monster-6" class="slot monster-slot" data-slot="6"></div>
+                        </div>
+                    </div>
+                </div>
 
-        <!-- 底部操作栏 -->
-        <div id="bottom-bar">
-            <button id="end-turn-btn" onclick="game.endTurn()">结束回合</button>
+                <!-- 战场信息 -->
+                <div id="battle-center">
+                    <div id="mana-display">
+                        <div class="mana-value"><span id="current-mana">1</span> / <span id="max-mana">1</span></div>
+                        <div class="mana-label">灵力</div>
+                    </div>
+                    <button id="end-turn-btn" onclick="game.endTurn()">结束回合</button>
+                </div>
+
+                <!-- 我方区域 -->
+                <div id="player-field-area">
+                    <div id="player-monster-area" class="monster-area-compact">
+                        <div class="slots-row six-slots">
+                            <div id="player-monster-1" class="slot monster-slot" data-slot="1"></div>
+                            <div id="player-monster-2" class="slot monster-slot" data-slot="2"></div>
+                            <div id="player-monster-3" class="slot monster-slot" data-slot="3"></div>
+                            <div id="player-monster-4" class="slot monster-slot" data-slot="4"></div>
+                            <div id="player-monster-5" class="slot monster-slot" data-slot="5"></div>
+                            <div id="player-monster-6" class="slot monster-slot" data-slot="6"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="spell-trap-row">
+                        <div id="player-formation-area" class="formation-area-compact">
+                            <div class="area-label formation-label">阵法</div>
+                            <div class="slots-row">
+                                <div id="player-formation-1" class="slot-mini formation-slot" data-slot="1"></div>
+                                <div id="player-formation-2" class="slot-mini formation-slot" data-slot="2"></div>
+                                <div id="player-formation-3" class="slot-mini formation-slot" data-slot="3"></div>
+                            </div>
+                        </div>
+                        
+                        <div id="player-treasure-area" class="treasure-area-compact">
+                            <div class="area-label treasure-label">法宝</div>
+                            <div class="slots-row">
+                                <div id="player-treasure-1" class="slot-mini treasure-slot" data-slot="1"></div>
+                                <div id="player-treasure-2" class="slot-mini treasure-slot" data-slot="2"></div>
+                                <div id="player-treasure-3" class="slot-mini treasure-slot" data-slot="3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 我方手牌 -->
+                <div id="player-hand" class="hand-area-main"></div>
+            </div>
+
+            <!-- 右侧：我方信息 -->
+            <div id="right-panel">
+                <!-- 我方英雄信息 -->
+                <div id="player-hero" class="hero-card-side" onclick="game.selectHero('player')">
+                    <div class="hero-avatar" id="player-avatar">韩</div>
+                    <div class="hero-info-compact">
+                        <div class="hero-name" id="player-hero-name">韩立</div>
+                        <div class="hero-stats-row">
+                            <span>❤️<span id="player-health">30</span></span>
+                            <span>🛡️<span id="player-armor">0</span></span>
+                            <span>🃏<span id="player-hand-count">0</span></span>
+                        </div>
+                        <div class="hero-realm"><span id="player-realm-text">练气1层</span> | <span id="player-sect">黄枫谷</span></div>
+                        <div class="hero-skill" id="hero-skill">长春功: 每回合恢复1点生命</div>
+                    </div>
+                </div>
+                
+                <!-- 我方牌组信息 -->
+                <div class="deck-info-side">
+                    <div>牌库: <span id="deck-count">40</span></div>
+                    <div>墓地: <span id="graveyard-count">0</span></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -95,7 +175,7 @@
                 <h3>游戏模式</h3>
                 <div class="mode-select">
                     <label class="mode-option">
-                        <input type="radio" name="game-mode" value="pvp" checked>
+                        <input type="radio" name="game-mode" value="pvp">
                         <span>👤 玩家对战</span>
                     </label>
                     <label class="mode-option">
@@ -103,8 +183,8 @@
                         <span>🤖 玩家 vs AI</span>
                     </label>
                     <label class="mode-option">
-                        <input type="radio" name="game-mode" value="eve">
-                        <span>🤖🤖 AI观战模式</span>
+                        <input type="radio" name="game-mode" value="eve" checked>
+                        <span>🤖🤖 AI观战</span>
                     </label>
                 </div>
             </div>
@@ -173,8 +253,8 @@
                         <input type="password" id="opponent-ai-key" placeholder="输入API Key">
                     </div>
                     <div class="form-row">
-                        <label>决策超时: <span id="timeout-value">5</span>秒</label>
-                        <input type="range" id="ai-timeout" min="3" max="15" value="5">
+                        <label>决策超时: <span id="timeout-value">15</span>秒</label>
+                        <input type="range" id="ai-timeout" min="3" max="30" value="15">
                     </div>
                 </div>
             </div>
