@@ -472,10 +472,12 @@ class ImmortalCardGame {
         const hasEquipableCreature = player.field.some(c => !c.treasure);
         const treasures = affordable.filter(({ card }) =>
             card.type === 'treasure' && hasEquipableCreature);
+        // 其他卡牌（排除无法装备的法宝）
         const others = affordable.filter(({ card }) =>
             !creatures.some(c => c.card === card) &&
             !damageSpells.some(c => c.card === card) &&
-            !treasures.some(c => c.card === card));
+            !treasures.some(c => c.card === card) &&
+            !(card.type === 'treasure' && !hasEquipableCreature)); // 排除无法装备的法宝
 
         // 策略优先级：
         // 1. 如果敌方场上有随从且我们有伤害法术，优先使用伤害法术清场
@@ -1601,6 +1603,21 @@ class Player {
         // 获取英雄优先卡牌
         const preferredCards = heroDeckStrategy.preferredCards || {};
 
+        // 获取英雄宗门
+        const heroSect = this.hero.sect;
+        const heroId = this.hero.id;
+
+        // 宗门过滤函数：检查卡牌是否适合当前英雄
+        const isCardValidForHero = (card) => {
+            // 如果没有宗门标记，通用卡牌，所有人可用
+            if (!card.sect) return true;
+            // 如果卡牌有英雄专属标记，检查是否匹配
+            if (card.heroOnly && card.heroOnly !== heroId) return false;
+            // 如果卡牌有宗门标记，检查是否匹配英雄宗门
+            if (card.sect && card.sect !== heroSect) return false;
+            return true;
+        };
+
         // 第一步：优先选择英雄特色卡牌
         Object.keys(preferredCards).forEach(type => {
             const preferredNames = preferredCards[type];
@@ -1609,7 +1626,7 @@ class Player {
             // 按优先顺序选择卡牌
             preferredNames.forEach(name => {
                 const card = available.find(c => c.name === name);
-                if (card && !selectedCards.some(s => s.name === card.name)) {
+                if (card && !selectedCards.some(s => s.name === card.name) && isCardValidForHero(card)) {
                     if (selectedCards.length < targetSize) {
                         selectedCards.push({ ...card, id: Math.random().toString(36) });
                         typeCounts[type] = (typeCounts[type] || 0) + 1;
@@ -1645,7 +1662,8 @@ class Player {
             for (let i = 0; i < available.length && count < targetCount && selectedCards.length < targetSize; i++) {
                 const card = available[i];
                 const isDuplicate = selectedCards.some(s => s.name === card.name);
-                if (!isDuplicate) {
+                // 检查宗门匹配
+                if (!isDuplicate && isCardValidForHero(card)) {
                     selectedCards.push({ ...card, id: Math.random().toString(36) });
                     typeCounts[type] = (typeCounts[type] || 0) + 1;
                     count++;
@@ -1779,22 +1797,14 @@ class Player {
 
                 // 检查死亡
                 if (this.health <= 0) {
-                    // 处理法宝进入墓地
-                    if (this.treasure) {
-                        // 触发五子同心魔等死亡触发法宝
-                        if (this.treasure.onDeath) {
-                            const msg = this.treasure.onDeath(game, game.getPlayerByCreature(this), this, this.treasure);
-                            if (msg) game.log(msg);
+                    // 注意：法宝处理在 checkDeath 中进行，避免重复
+                    // 只处理玄天仙盾等救命法宝
+                    if (this.treasure && this.treasure.onFatalDamage) {
+                        const msg = this.treasure.onFatalDamage(game, this, this.treasure);
+                        if (msg) {
+                            game.log(msg);
+                            if (this.health > 0) return; // 被救活了
                         }
-                        // 触发卸下效果
-                        if (this.treasure.onUnequip) {
-                            this.treasure.onUnequip(this);
-                        }
-                        // 法宝进入墓地
-                        const player = game.getPlayerByCreature(this);
-                        player.graveyard.push(this.treasure);
-                        player.treasures = player.treasures.filter(t => t !== this.treasure);
-                        game.log(`💍 ${this.treasure.name} 随修士陨落进入墓地`);
                     }
                 }
             }

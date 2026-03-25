@@ -26,7 +26,8 @@ const CARD_DATABASE = {
             health: 2,
             spiritRoot: '木',
             description: '初入修仙路的弟子',
-            avatar: '👤'
+            avatar: '👤',
+            sect: '黄枫谷'
         },
         {
             id: 'disciple_moyao',
@@ -38,7 +39,8 @@ const CARD_DATABASE = {
             health: 1,
             spiritRoot: '火',
             description: '残忍嗜血的魔道修士',
-            avatar: '👹'
+            avatar: '👹',
+            sect: '魔道'
         },
         {
             id: 'outer_disciple',
